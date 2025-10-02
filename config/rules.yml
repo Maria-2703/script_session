@@ -1,0 +1,48 @@
+columns_map:
+  timestamp: "Marca temporal"
+  origen: "Cual es su procedencia?"
+  ciudad_es: "En el caso de Espaa, qu ciudad?"
+  pais_intl: "En el caso de Internacional, qu pas?"
+  n_adultos: "# con cuntas personas viajas? (adultos)"
+  n_menores: "# con cuntas menoeres viajas?"
+  fin_semana: "con el fin de semana"
+
+schema:
+  required: [timestamp, origen, n_adultos, n_menores, fin_semana]
+
+types:
+  timestamp: datetime
+  origen: category
+  ciudad_es: string
+  pais_intl: string
+  n_adultos: int
+  n_menores: int
+  fin_semana: category
+
+domains:
+  origen:
+    allowed: ["Alcoi", "Espaa", "Internacional", "Comunidad Valenciana"]
+  fin_semana:
+    allowed: ["S", "No", "No entiendo la pregunta"]
+
+ranges:  
+  n_adultos: {min: 0, max: 10}
+  n_menores: {min: 0, max: 10}
+
+uniques:
+  - [timestamp, origen]
+
+conditionals:
+  - if: {origen: "Espaa"}
+    then: {require_not_null: ["ciudad_es"]}
+  - if: {origen: "Internacional"}
+    then: {require_not_null: ["pais_intl"]}
+  - rule: "n_adultos + n_menores >= 1"
+
+severity:
+  missing_column: error
+  type_mismatch: error
+  domain_violation: warning
+  range_violation: warning
+  uniqueness_violation: error
+  conditional_violation: error
